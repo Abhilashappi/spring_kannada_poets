@@ -8,31 +8,81 @@
             margin: 0;
             font-family: "Nirmala UI", "Tunga", sans-serif;
             background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') no-repeat center center/cover;
+            background-size: cover;
             color: white;
             text-align: center;
         }
         header {
-            background: rgba(0,0,0,0.6);
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7);
+            padding: 30px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
         header h1 {
             margin: 0;
-            font-size: 2.5rem;
+            font-size: 3rem;
+        }
+        header p {
+            margin-top: 10px;
+            font-size: 1.2rem;
+        }
+        .intro {
+            max-width: 900px;
+            margin: 40px auto;
+            background: rgba(0,0,0,0.6);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.7);
+            text-align: justify;
+            line-height: 1.6;
+        }
+        .featured-poets {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .poet-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            width: 250px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+            overflow: hidden;
+            color: white;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .poet-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .poet-card h3 {
+            margin: 10px 0 5px 0;
+            font-size: 1.4rem;
+        }
+        .poet-card p {
+            padding: 0 10px 15px;
+            font-size: 0.9rem;
+        }
+        .poet-card:hover {
+            transform: scale(1.05);
         }
         .btn {
             display: inline-block;
             margin-top: 20px;
-            padding: 12px 24px;
+            padding: 14px 28px;
             background: #ff9800;
             color: white;
             text-decoration: none;
             font-weight: bold;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            transition: background 0.3s, transform 0.3s;
         }
         .btn:hover {
             background: #e68900;
+            transform: translateY(-3px);
         }
     </style>
 </head>
@@ -41,6 +91,34 @@
         <h1>ಪ್ರಸಿದ್ಧ ಕನ್ನಡ ಕವಿಗಳು</h1>
         <p>ಕನ್ನಡ ಸಾಹಿತ್ಯವನ್ನು ಕಂಗೊಳಿಸಿದ ಮಹಾನ್ ಕವಿಗಳ ಪರಿಚಯ</p>
     </header>
+
+    <div class="intro">
+        <p>
+            ಕನ್ನಡ ಸಾಹಿತ್ಯವು ಸಾವಿರಾರು ವರ್ಷಗಳಿಂದ ಬೆಳೆಯುತ್ತಿರುವ ಶ್ರೀಮಂತ ಪರಂಪರೆಯನ್ನು ಹೊಂದಿದೆ. 
+            ಪ್ರಾಚೀನ ಪಲ್ಲವಿಯ ಕಾಲದಿಂದ ಹಿಡಿದು ಆಧುನಿಕ ಕಾಲದವರೆಗೆ, ಕನ್ನಡ ಕವಿಗಳು ತಮ್ಮ ಕಾವ್ಯಗಳಲ್ಲಿ 
+            ನಿಸರ್ಗದ ಸೌಂದರ್ಯ, ಮಾನವೀಯ ಭಾವನೆಗಳು ಮತ್ತು ಧಾರ್ಮಿಕ ತತ್ತ್ವಗಳನ್ನು ಒಗ್ಗೂಡಿಸಿದ್ದಾರೆ. 
+            ಈ ವೆಬ್ ಅಪ್ಲಿಕೇಶನ್ ಮೂಲಕ ನೀವು ಕೆಲವು ಪ್ರಸಿದ್ಧ ಕನ್ನಡ ಕವಿಗಳ ಜೀವನ ಮತ್ತು ಸಾಹಿತ್ಯದ 
+            ಪ್ರಮುಖ ಕೃತಿಗಳನ್ನು ತಿಳಿದುಕೊಳ್ಳಬಹುದು.
+        </p>
+    </div>
+
+    <div class="featured-poets">
+        <div class="poet-card">
+            <img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSHVDVIa8fOlFNCQ3HksfKlkLGV8HFZau4_dIlidesBnbSCyeIissENTzk5eFLjAast6bf3uTPnD4_zCaIc-WSyXbhpk7LqFt8EA8lccOo" alt="ಕು ವೆಂಪು">
+            <h3>ಕುವೆಂಪು</h3>
+            <p>“ರಾಷ್ಟ್ರಕವಿ” ಎಂದು ಕರೆದ ಕುವೆಂಪು ಜ್ಞಾನಪೀಠ ಪ್ರಶಸ್ತಿ ಪಡೆದ ಪ್ರಥಮ ಕನ್ನಡ ಕವಿ.</p>
+        </div>
+        <div class="poet-card">
+            <img src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcR69d309O-v0clXfE32NT9VwRYKZY59BHR4uuiCJhC-Qu15G3p6Now9036YIDc52O085Cu4L4XzszsiCbwL6vLssLymyZrAL77_XrJwofI" alt="ಡಾ. ಬೇಂದ್ರೆ">
+            <h3>ಡಾ. ಡಿ. ಆರ್. ಬೇಂದ್ರೆ</h3>
+            <p>ಕನ್ನಡ ಕಾವ್ಯದ ಮಾಸ್ಟರ್, 1967 ರಲ್ಲಿ ಜ್ಞಾನಪೀಠ ಪ್ರಶಸ್ತಿ ಗೆದ್ದವರು.</p>
+        </div>
+        <div class="poet-card">
+            <img src="https://media.assettype.com/prajavani/import/sites/pv/files/article_images/2020/02/28/shetter1582890879.jpg?w=1200&h=675&auto=format%2Ccompress&fit=max&enlarge=true" alt="ಸಂಶು ಶೆಟ್ಟರ್">
+            <h3>ಸಂಶು ಶೆಟ್ಟರ್</h3>
+            <p>ಆಧುನಿಕ ಕನ್ನಡ ಕವಿಗಳಲ್ಲಿ ಪ್ರಬುದ್ಧ ಮತ್ತು ಸಾಮಾಜಿಕ ಸಂದೇಶವನ್ನು ಒಳಗೊಂಡ ಕವಿಗಳು.</p>
+        </div>
+    </div>
 
     <a href="home.html" class="btn">ಕವಿಗಳ ವಿವರಗಳಿಗೆ ಹೋಗಿ</a>
 </body>
