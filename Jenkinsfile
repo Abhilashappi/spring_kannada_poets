@@ -7,7 +7,7 @@ pipeline {
         DOCKER_PASS = "${DOCKERHUB_CREDENTIALS_PSW}"
         IMAGE_NAME = "${DOCKER_USER}/spring_kannada_poets"
         TAG = "latest"
-        REMOTE = "ubuntu@<EC2_PUBLIC_IP>"   // change as needed
+        REMOTE = "ubuntu@<EC2_PUBLIC_IP>"  // Replace with your EC2 IP
     }
 
     stages {
@@ -17,8 +17,9 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build WAR') {
             steps {
+                // Build the WAR file, skip tests
                 sh 'mvn clean package -DskipTests'
             }
         }
@@ -40,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Server') {
+        stage('Deploy to EC2 Server') {
             steps {
                 sshagent(['ec2-ssh-key']) {
                     sh """
@@ -64,4 +65,4 @@ pipeline {
             echo "❌ Deployment failed."
         }
     }
-} ( how to run this
+}
