@@ -46,14 +46,14 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${REMOTE} << 'EOF'
                           echo "🔹 Pulling latest Docker image..."
-                          docker pull ${IMAGE_NAME}:${TAG}
+                         sudo docker pull ${IMAGE_NAME}:${TAG}
 
                           echo "🔹 Stopping old container if exists..."
-                          docker stop spring_kannada_poets || true
-                          docker rm spring_kannada_poets || true
+                         sudo docker stop spring_kannada_poets || true
+                         sudo docker rm spring_kannada_poets || true
 
                           echo "🔹 Running new container..."
-                          docker run -d -p 8080:8080 --name spring_kannada_poets ${IMAGE_NAME}:${TAG}
+                         sudo docker run -d -p 8080:8080 --name spring_kannada_poets ${IMAGE_NAME}:${TAG}
 
                           echo "✅ Deployment successful on EC2 instance!"
                         EOF
