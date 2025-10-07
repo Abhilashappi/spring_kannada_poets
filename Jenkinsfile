@@ -7,7 +7,7 @@ pipeline {
         DOCKER_PASS = "${DOCKERHUB_CREDENTIALS_PSW}"
         IMAGE_NAME = "${DOCKER_USER}/spring_kannada_poets"
         TAG = "latest"
-        REMOTE = "ubuntu@<EC2_PUBLIC_IP>"  // Replace with your EC2 IP
+        REMOTE = "ubuntu@13.200.254.201"  // ✅ Replace with your actual EC2 IP
     }
 
     stages {
@@ -19,7 +19,6 @@ pipeline {
 
         stage('Build WAR') {
             steps {
-                // Build the WAR file, skip tests
                 sh 'mvn clean package -DskipTests'
             }
         }
@@ -43,14 +42,21 @@ pipeline {
 
         stage('Deploy to EC2 Server') {
             steps {
-                sshagent(['ubuntu']) {
+                sshagent(['ubuntu']) {  // ✅ This ID must match your Jenkins SSH credential ID
                     sh """
-                    ssh -o StrictHostKeyChecking=no ${REMOTE} << 'EOF'
-                      docker pull ${IMAGE_NAME}:${TAG}
-                      docker stop spring_kannada_poets || true
-                      docker rm spring_kannada_poets || true
-                      docker run -d --name spring_kannada_poets -p 8080:8080 ${IMAGE_NAME}:${TAG}
-                    EOF
+                        ssh -o StrictHostKeyChecking=no ${REMOTE} << 'EOF'
+                          echo "🔹 Pulling latest Docker image..."
+                          docker pull ${IMAGE_NAME}:${TAG}
+
+                          echo "🔹 Stopping old container if exists..."
+                          docker stop spring_kannada_poets || true
+                          docker rm spring_kannada_poets || true
+
+                          echo "🔹 Running new container..."
+                          docker run -d -p 8080:8080 --name spring_kannada_poets ${IMAGE_NAME}:${TAG}
+
+                          echo "✅ Deployment successful on EC2 instance!"
+                        EOF
                     """
                 }
             }
