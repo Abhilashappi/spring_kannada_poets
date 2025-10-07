@@ -7,7 +7,7 @@
     <groupId>com.abhilashappi</groupId>
     <artifactId>spring_kannada_poets</artifactId>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>spring_kannada_poets</name>
     <description>Spring Boot Kannada Poets App</description>
@@ -40,3 +40,4 @@
         </plugins>
     </build>
 </project>
+
