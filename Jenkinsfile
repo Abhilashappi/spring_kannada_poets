@@ -44,16 +44,22 @@ pipeline {
             steps {
                 sshagent(['ubuntu']) {  // ✅ This ID must match your Jenkins SSH credential ID
                     sh """
-                        ssh -o StrictHostKeyChecking=no ${REMOTE} << 'EOF'
-                          echo "🔹 Pulling latest Docker image..."
-                         sudo docker pull ${IMAGE_NAME}:${TAG}
+                        # SSH command structure
+ssh -o StrictHostKeyChecking=no ubuntu@13.200.254.201 << EOF
+  # 1. Stop and remove old container robustly
+  echo "🔹 Stopping and removing old container..."
+  docker stop spring_kannada_poets || true
+  docker rm spring_kannada_poets || true
 
-                          echo "🔹 Stopping old container if exists..."
-                         sudo docker stop spring_kannada_poets || true
-                         sudo docker rm spring_kannada_poets || true
+  # 2. Pull the latest image
+  echo "🔹 Pulling latest Docker image..."
+  docker pull abhi539/host:latest
 
-                          echo "🔹 Running new container..."
-                         sudo docker run -d -p 8080:8080 --name spring_kannada_poets ${IMAGE_NAME}:${TAG}
+  # 3. Run the new container
+  echo "🔹 Running new container..."
+  # -p 8080:8084 maps Host Port 8080 to Container Port 8084
+  docker run -d --name spring_kannada_poets -p 8080:8084 abhi539/host:latest
+
 
                           echo "✅ Deployment successful on EC2 instance!"
                         EOF
