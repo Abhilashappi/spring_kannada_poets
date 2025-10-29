@@ -23,7 +23,7 @@ pipeline {
         stage('Docker Build the Image') {
             steps {
                 echo "Building the Docker image..."
-                sh "sudo docker build -t ${IMAGE_NAME} ."
+                sh "docker build -t ${IMAGE_NAME} ."
             }
             post {
                 success { echo 'Docker image built successfully.' }
@@ -39,7 +39,7 @@ pipeline {
                     passwordVariable: 'PASS'
                 )]) {
                     sh '''
-                        echo "$PASS" | sudo docker login -u "$USER" --password-stdin
+                        echo "$PASS" | docker login -u "$USER" --password-stdin
                     '''
                 }
             }
@@ -48,7 +48,7 @@ pipeline {
         stage('Docker Tag the Image') {
             steps {
                 echo "Tagging the Docker image..."
-                sh "sudo docker tag ${IMAGE_NAME} ${DOCKER_REPO}:latest"
+                sh "docker tag ${IMAGE_NAME} ${DOCKER_REPO}:latest"
             }
             post {
                 success { echo 'Docker image tagged successfully.' }
@@ -59,7 +59,7 @@ pipeline {
         stage('Docker Push the Image') {
             steps {
                 echo "Pushing the Docker image to DockerHub..."
-                sh "sudo docker push ${DOCKER_REPO}:latest"
+                sh "docker push ${DOCKER_REPO}:latest"
             }
             post {
                 success { echo 'Docker image pushed to DockerHub successfully.' }
@@ -71,8 +71,8 @@ pipeline {
             steps {
                 echo "Cleaning up local Docker images..."
                 sh """
-                    sudo docker rmi ${DOCKER_REPO}:latest || true
-                    sudo docker rmi ${IMAGE_NAME} || true
+                    docker rmi ${DOCKER_REPO}:latest || true
+                    docker rmi ${IMAGE_NAME} || true
                 """
             }
             post {
@@ -84,7 +84,7 @@ pipeline {
         stage('Docker Logout from DockerHub') {
             steps {
                 echo "Logging out from DockerHub..."
-                sh 'sudo docker logout'
+                sh 'docker logout'
             }
         }
 
@@ -93,7 +93,7 @@ pipeline {
                 script {
                     echo "Checking if the Docker container is already running..."
                     def containerExists = sh(
-                        script: "sudo docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME} || true",
+                        script: "docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME} || true",
                         returnStdout: true
                     ).trim()
 
@@ -108,17 +108,17 @@ pipeline {
                         if (userChoice == 'Yes') {
                             echo "Stopping and removing old container..."
                             sh """
-                                sudo docker stop ${CONTAINER_NAME} || true
-                                sudo docker rm ${CONTAINER_NAME} || true
+                                docker stop ${CONTAINER_NAME} || true
+                                docker rm ${CONTAINER_NAME} || true
                                 echo "Starting new container..."
-                                sudo docker run -d -p ${PORT}:8080 --name ${CONTAINER_NAME} ${DOCKER_REPO}:latest
+                                docker run -d -p ${PORT}:8080 --name ${CONTAINER_NAME} ${DOCKER_REPO}:latest
                             """
                         } else {
                             echo "Skipping container restart as per user choice."
                         }
                     } else {
                         echo "No existing container found — starting new one..."
-                        sh "sudo docker run -d -p ${PORT}:8080 --name ${CONTAINER_NAME} ${DOCKER_REPO}:latest"
+                        sh "docker run -d -p ${PORT}:8080 --name ${CONTAINER_NAME} ${DOCKER_REPO}:latest"
                     }
                 }
             }
