@@ -1,84 +1,128 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'maven'
+    }
+
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        DOCKER_USER = "${DOCKERHUB_CREDENTIALS_USR}"
-        DOCKER_PASS = "${DOCKERHUB_CREDENTIALS_PSW}"
-        IMAGE_REPO = "${DOCKER_USER}/spring_kannada_poets"
-        TAG = "latest"
-        REMOTE = "ubuntu@13.233.31.187"  // Your EC2 connection string
-        CONTAINER_NAME = "spring_kannada_poets"
-        HOST_PORT = "8080"
-        CONTAINER_PORT = "8084"
+        DOCKER_IMAGE = 'abhi539/spring_kannada_poets'
+        CONTAINER_NAME = 'spring_kannada_poets_container'
+        APP_PORT = '8080'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'master', url: 'https://github.com/Abhilashappi/spring_kannada_poets.git'
+                echo "Checking out the latest code from GitHub..."
+                checkout scm
             }
         }
 
         stage('Build WAR') {
             steps {
+                echo "Building the project using Maven..."
                 sh 'mvn clean package -DskipTests'
+            }
+            post {
+                success {
+                    echo 'WAR file built successfully.'
+                }
+                failure {
+                    echo 'WAR file build failed.'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_REPO}:${TAG} ."
+                echo "Building Docker image..."
+                sh 'sudo docker build -t $DOCKER_IMAGE:latest .'
+            }
+            post {
+                success {
+                    echo 'Docker image built successfully.'
+                }
+                failure {
+                    echo 'Docker image build failed.'
+                }
             }
         }
 
-        stage('Push to DockerHub') {
+        stage('Docker Login') {
             steps {
-                // Warning: Passing secrets via Groovy string interpolation is insecure, but typical for non-credential login
-                sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
-                sh "docker push ${IMAGE_REPO}:${TAG}"
+                echo "Logging into DockerHub..."
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-cred-id',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    sh '''
+                        echo "$PASS" | sudo docker login -u "$USER" --password-stdin
+                    '''
+                }
             }
         }
 
-        stage('Deploy to EC2 Server') {
+        stage('Push Docker Image') {
             steps {
-                // The SSH key must be the correct format (which you fixed!)
-                sshagent(['ubuntu']) {
-                    // Pass a robust script string to the remote SSH session
-                    sh """
-                        REMOTE_COMMANDS="
-                          # 1. STOP and REMOVE old container. '|| true' ensures the step doesn't fail if the container isn't running.
-                          echo '🔹 Stopping and removing old container...'
-                          docker stop ${CONTAINER_NAME} || true
-                          docker rm ${CONTAINER_NAME} || true
+                echo "Pushing image to DockerHub..."
+                sh 'sudo docker push $DOCKER_IMAGE:latest'
+            }
+            post {
+                success {
+                    echo 'Image pushed to DockerHub successfully.'
+                }
+                failure {
+                    echo 'Failed to push Docker image.'
+                }
+            }
+        }
 
-                          # 2. Pull the latest image
-                          echo '🔹 Pulling latest Docker image: ${IMAGE_REPO}:${TAG}...'
-                          docker pull ${IMAGE_REPO}:${TAG}
-
-                          # 3. Run the new container, mapping ${HOST_PORT} to ${CONTAINER_PORT}
-                          echo '🔹 Running new container...'
-                          docker run -d \\
-                            --name ${CONTAINER_NAME} \\
-                            -p ${HOST_PORT}:${CONTAINER_PORT} \\
-                            ${IMAGE_REPO}:${TAG}
-
-                          echo '✅ Deployment completed successfully.'
-                        "
-                        # Execute the full command string on the remote server
-                        ssh -o StrictHostKeyChecking=no ${REMOTE} "\${REMOTE_COMMANDS}"
-                    """
+        stage('Deploy Docker Container') {
+            steps {
+                script {
+                    echo "Checking for existing container..."
+                    def containerExists = sh(
+                        script: "sudo docker ps -a --format '{{.Names}}' | grep -w $CONTAINER_NAME || true",
+                        returnStdout: true
+                    ).trim()
+                    if (containerExists) {
+                        echo "Container already exists."
+                        def userChoice = input(
+                            id: 'ContainerRestart',
+                            message: 'Container already running. Do you want to stop and redeploy?',
+                            parameters: [choice(choices: ['Yes', 'No'], description: 'Choose action', name: 'Confirm')]
+                        )
+                        if (userChoice == 'Yes') {
+                            echo "Stopping and removing old container..."
+                            sh '''
+                                sudo docker stop $CONTAINER_NAME || true
+                                sudo docker rm $CONTAINER_NAME || true
+                                echo "Starting new container..."
+                                sudo docker run -d -p 8084:8080 --name $CONTAINER_NAME $DOCKER_IMAGE:latest
+                            '''
+                        } else {
+                            echo "Skipping redeployment as per user choice."
+                        }
+                    } else {
+                        echo "Starting new container..."
+                        sh 'sudo docker run -d -p 8084:8080 --name $CONTAINER_NAME $DOCKER_IMAGE:latest'
+                    }
                 }
             }
         }
     }
 
     post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
         success {
-            echo "✅ Pipeline Success: Build, Push, and Deployment completed."
+            echo 'Pipeline succeeded.'
         }
         failure {
-            echo "❌ Pipeline Failure: Check logs for details."
+            echo 'Pipeline failed. Check logs for errors.'
         }
     }
 }
