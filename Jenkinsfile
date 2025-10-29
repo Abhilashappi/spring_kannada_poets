@@ -7,7 +7,7 @@ pipeline {
         DOCKER_PASS = "${DOCKERHUB_CREDENTIALS_PSW}"
         IMAGE_REPO = "${DOCKER_USER}/spring_kannada_poets"
         TAG = "latest"
-        REMOTE = "ubuntu@13.200.254.201"  // Your EC2 connection string
+        REMOTE = "ubuntu@13.233.31.187"  // Your EC2 connection string
         CONTAINER_NAME = "spring_kannada_poets"
         HOST_PORT = "8080"
         CONTAINER_PORT = "8084"
