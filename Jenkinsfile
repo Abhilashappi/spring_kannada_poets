@@ -6,38 +6,32 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE = 'abhi539/spring_kannada_poets'
+        IMAGE_NAME = 'spring-kannada-poets'
+        DOCKER_REPO = 'abhi539/spring-kannada-poets'
         CONTAINER_NAME = 'spring_kannada_poets_container'
-        APP_PORT = '8080'
+        PORT = '8084'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Build') {
             steps {
-                echo "Checking out the latest code from GitHub..."
-                checkout scm
-            }
-        }
-
-        stage('Build WAR') {
-            steps {
-                echo "Building the project using Maven..."
+                echo "Building the project..."
                 sh 'mvn clean package -DskipTests'
             }
             post {
                 success {
-                    echo 'WAR file built successfully.'
+                    echo 'Build stage completed successfully.'
                 }
                 failure {
-                    echo 'WAR file build failed.'
+                    echo 'Build stage failed.'
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Build the Image') {
             steps {
-                echo "Building Docker image..."
-                sh 'sudo docker build -t $DOCKER_IMAGE:latest .'
+                echo "Building the Docker image..."
+                sh 'sudo docker build -t $IMAGE_NAME .'
             }
             post {
                 success {
@@ -49,9 +43,8 @@ pipeline {
             }
         }
 
-        stage('Docker Login') {
+        stage('Docker Login to DockerHub') {
             steps {
-                echo "Logging into DockerHub..."
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-cred-id',
                     usernameVariable: 'USER',
@@ -64,65 +57,113 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Docker Tag the Image') {
             steps {
-                echo "Pushing image to DockerHub..."
-                sh 'sudo docker push $DOCKER_IMAGE:latest'
+                echo "Tagging the Docker image..."
+                sh 'sudo docker tag $IMAGE_NAME $DOCKER_REPO:latest'
             }
             post {
                 success {
-                    echo 'Image pushed to DockerHub successfully.'
+                    echo 'Docker image tagged successfully.'
                 }
                 failure {
-                    echo 'Failed to push Docker image.'
+                    echo 'Failed to tag Docker image.'
                 }
+            }
+        }
+
+        stage('Docker Push the Image') {
+            steps {
+                echo "Pushing the Docker image to DockerHub..."
+                sh 'sudo docker push $DOCKER_REPO:latest'
+            }
+            post {
+                success {
+                    echo 'Docker image pushed to DockerHub successfully.'
+                }
+                failure {
+                    echo 'Failed to push Docker image to DockerHub.'
+                }
+            }
+        }
+
+        stage('Cleanup Local Docker Images') {
+            steps {
+                echo "Cleaning up local Docker images..."
+                sh '''
+                    sudo docker rmi $DOCKER_REPO:latest || true
+                    sudo docker rmi $IMAGE_NAME || true
+                '''
+            }
+            post {
+                success {
+                    echo 'Local Docker images cleaned up successfully.'
+                }
+                failure {
+                    echo 'Failed to clean up local Docker images.'
+                }
+            }
+        }
+
+        stage('Docker Logout from DockerHub') {
+            steps {
+                echo "Logging out from DockerHub..."
+                sh 'sudo docker logout'
             }
         }
 
         stage('Deploy Docker Container') {
             steps {
                 script {
-                    echo "Checking for existing container..."
+                    echo "Checking if the Docker container is already running..."
                     def containerExists = sh(
                         script: "sudo docker ps -a --format '{{.Names}}' | grep -w $CONTAINER_NAME || true",
                         returnStdout: true
                     ).trim()
+
                     if (containerExists) {
-                        echo "Container already exists."
+                        echo "Container '$CONTAINER_NAME' already exists."
                         def userChoice = input(
                             id: 'ContainerRestart',
                             message: 'Container already running. Do you want to stop and redeploy?',
                             parameters: [choice(choices: ['Yes', 'No'], description: 'Choose action', name: 'Confirm')]
                         )
+
                         if (userChoice == 'Yes') {
                             echo "Stopping and removing old container..."
                             sh '''
                                 sudo docker stop $CONTAINER_NAME || true
                                 sudo docker rm $CONTAINER_NAME || true
                                 echo "Starting new container..."
-                                sudo docker run -d -p 8084:8080 --name $CONTAINER_NAME $DOCKER_IMAGE:latest
+                                sudo docker run -d -p 8084:8080 --name $CONTAINER_NAME $DOCKER_REPO:latest
                             '''
                         } else {
-                            echo "Skipping redeployment as per user choice."
+                            echo "Skipping container restart as per user choice."
                         }
                     } else {
-                        echo "Starting new container..."
-                        sh 'sudo docker run -d -p 8084:8080 --name $CONTAINER_NAME $DOCKER_IMAGE:latest'
+                        echo "No existing container found — starting new one..."
+                        sh 'sudo docker run -d -p 8084:8080 --name $CONTAINER_NAME $DOCKER_REPO:latest'
                     }
                 }
+            }
+        }
+
+        stage('Done') {
+            steps {
+                echo "Pipeline execution completed."
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline execution completed.'
+            echo 'Pipeline finished execution.'
         }
         success {
-            echo 'Pipeline succeeded.'
+            echo 'Pipeline executed successfully.'
         }
         failure {
-            echo 'Pipeline failed. Check logs for errors.'
+            echo 'Pipeline failed — check logs for details.'
         }
     }
 }
