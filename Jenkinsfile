@@ -23,21 +23,21 @@ pipeline {
 
         stage('Build WAR with Maven') {
             steps {
-                echo '🔨 Building project with Maven...'
+                echo ' Building project with Maven...'
                 sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "🐳 Building Docker image: ${IMAGE_NAME}:${BUILD_NUMBER}"
+                echo " Building Docker image: ${IMAGE_NAME}:${BUILD_NUMBER}"
                 sh "sudo docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
-                echo '🔐 Logging in to Docker Hub...'
+                echo ' Logging in to Docker Hub...'
                 withCredentials([usernamePassword(
                     credentialsId: env.DOCKERHUB_CREDENTIALS_ID, 
                     usernameVariable: 'DOCKER_USER', 
@@ -51,13 +51,13 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    echo "📤 Pushing image: ${IMAGE_NAME}:${BUILD_NUMBER}"
+                    echo " Pushing image: ${IMAGE_NAME}:${BUILD_NUMBER}"
                     sh "sudo docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
 
-                    echo "🏷️ Tagging as latest..."
+                    echo " Tagging as latest..."
                     sh "sudo docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest"
 
-                    echo "📤 Pushing latest tag..."
+                    echo " Pushing latest tag..."
                     sh "sudo docker push ${IMAGE_NAME}:latest"
                 }
             }
