@@ -7,6 +7,13 @@ pipeline {
     }
 
     stages {
+
+         stage('Checkout Source') {
+            steps {
+                echo 'Checking out source code...'
+                git branch: 'master', url: 'https://github.com/Abhilashappi/spring_kannada_poets.git'
+            }
+        }
         stage('Build') {
             steps {
                 echo "Building the project..."
