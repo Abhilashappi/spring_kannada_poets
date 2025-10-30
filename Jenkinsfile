@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout Source') {
             steps {
                 echo '📦 Checking out source code...'
-                git branch: 'master', url: 'https://github.com/Abhilashappi/spring_kannada_poets.git'
+                git branch: 'master', url: 'https://github.com/Abhilashappi/spring_kannada_poets'
             }
         }
 
